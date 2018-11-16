@@ -1,3 +1,12 @@
+# Loading the different Bro Scripts to handle Sysmon events.
+#
+# Authors: Jeff Atkinson (jatkinson@salesforce.com)
+#
+# Copyright (c) 2017, salesforce.com, inc.
+# All rights reserved.
+# Licensed under the BSD 3-Clause license. 
+# For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
+
 @load  ./sysmon_subscribe           #-- Subscribe to broker /sysmon --#
 @load ./processCreate.bro           #-- Sysmon EventID 1 --#
 @load ./procChangeFileTime.bro      #-- Sysmon EventID 2 --#
