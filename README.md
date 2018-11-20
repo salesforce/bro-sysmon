@@ -68,7 +68,7 @@ event sysmonProcNetConn(computerName: string, proto: string,
 		}
 Output: Host blocky-PC spawned ProcessID 3968, C:\Users\blocky\Desktop\putty.exe
 ~~~
-### Bro-Sysmonlogs will be written to file.
+### Bro-Sysmon logs will be written to file.
 ```
 #fields computerName    processId       company currentDirectory        description     fileVersion     hashes  image   integrityLevel  logonGuid       logonId parentCommandline       parentImage
      parentProcessGuid       parentProcessId processGuid     product terminalSessionId       user    utcTime
