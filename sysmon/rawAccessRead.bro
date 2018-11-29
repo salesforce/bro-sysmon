@@ -34,10 +34,9 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::RawAccessRead, [$columns=rawAccessRead, $ev=log_rawAccessRead, $path="sysmon_rawAccessRead"]);
 }
 
-event sysmonRawAccessRead(computerName: string, utcTime: string, processGuid: string, processId: string, image: string, device: string)
+event sysmon_rawAccessRead(computerName: string, utcTime: string, processGuid: string, processId: string, image: string, device: string)
 {
 local r: rawAccessRead;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$image = image;
@@ -45,6 +44,5 @@ r$processGuid = processGuid;
 r$processId = processId;
 r$device = device;
 
-#print "Writing log";
 Log::write(Sysmon::RawAccessRead, r);
 }
