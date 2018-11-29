@@ -1,515 +1,463 @@
-# This script handles Sysmon Configuration Change events and writes to sysmon_configChange.log.
-# Version 1.0 (November 2018)
-#
-# Authors: Jeff Atkinson (jatkinson@salesforce.com)
-#
-# Copyright (c) 2017, salesforce.com, inc.
-# All rights reserved.
-# Licensed under the BSD 3-Clause license. 
-# For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
+#!/usr/bin/env python
 
-
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from argparse import ArgumentParser
 
 import broker
-import broker.bro
-import json, sys, pprint
-
-#Setup Bro comms
-endpoint = broker.Endpoint()
-endpoint.peer("localhost",9999)
-
-
-#-- Sysmon Process Created --- EventID1 --#
-
-def procCreation(myJson):               #### Event ID: 1 ####
-  computerName = myJson["computer_name"]
-  event = myJson["event_data"]
-  company = event["Company"]
-  currentDirectory = event["CurrentDirectory"]
-  if 'Description' in event:
-    description = event["Description"]
-  else:
-    description = "None"
-  fileVersion = event["FileVersion"]
-  ##### Need to separate MD5 and SHA256
-  hashes = event["Hashes"]
-  image = event["Image"]
-  integrityLevel = event["IntegrityLevel"]
-  logonGuid = event["LogonGuid"]
-  logonId = event["LogonId"]
-  parentCommandline = event["ParentCommandLine"]
-  parentImage = event["ParentImage"]
-  parentProcessGuid = event["ParentProcessGuid"]
-  parentProcessId = event["ParentProcessId"]
-  processGuid = event["ProcessGuid"]
-  processId = event["ProcessId"]
-  product = event["Product"]
-  terminalSessionId = event["TerminalSessionId"]
-  user = event["User"]
-  utcTime = event["UtcTime"] 
-
-  #print computerName,company,currentDirectory,description,fileVersion,hashes,image,integrityLevel,logonGuid,logonId,parentCommandline,parentImage,parentProcessGuid,parentProcessId,processGuid,processId,product,terminalSessionId,user,utcTime
-  #pprint.pprint(myJson)
-
-  event = broker.bro.Event("sysmonProcCreation",str(computerName),company.encode('ascii','ignore'),str(currentDirectory),description.encode('ascii','ignore'),str(fileVersion),str(hashes),str(image),str(integrityLevel),str(logonGuid),str(logonId),str(parentCommandline),str(parentImage),str(parentProcessGuid),str(parentProcessId),str(processGuid),str(processId),product.encode('ascii','ignore'),str(terminalSessionId),str(user),str(utcTime))
-  endpoint.publish("/sysmon", event)
-
-
-def procChangeFile(myJson):             #### Event ID: 2 ####
-   #pprint.pprint(myJson["event_data"])
-   computerName =  myJson["computer_name"]
-   event = myJson["event_data"]
-   utcTime = event["UtcTime"]
-   processGuid = event["ProcessGuid"]
-   processId = event["ProcessId"]
-   image = event["Image"]
-   targetFilename = event["TargetFilename"]
-   creationUtcTime = event["CreationUtcTime"]
-   previousCreationUtcTime = event["PreviousCreationUtcTime"]
-
-   #print comptuerName,utcTime,processGuid,processId,targetFilename,creationUtcTime,previousCreationUtcTime
-   event = broker.bro.Event("sysmonProcChangeFile",str(computerName),str(utcTime),str(processGuid),str(processId),str(targetFilename),str(creationUtcTime),str(previousCreationUtcTime))
-   endpoint.publish("/sysmon", event)
-
-
-
-#-- Sysmon Process Network Connect --- EventID3 --#
-def procnetconn(myJson):	#-- Event ID: 3 --#
-   computerName =  myJson["computer_name"]
-   event = myJson["event_data"]
-   proto = myJson["event_data"]["Protocol"]
-   dstip = event["DestinationIp"]
-   dstprt = event["DestinationPort"]
-   srcip = event["SourceIp"]
-   srcprt = event["SourcePort"]
-   procImage = event["Image"]
-   procId = event["ProcessId"]
-   if 'User' in event:
-     user = event["User"]
-   else:
-     user = "NA"
-   myTime = event["UtcTime"]
-   
-   #print computerName,srcip+"  ==>  "+dstip+":"+dstprt+"/"+proto,procId,procImage,user,myTime
-
-   event = broker.bro.Event("sysmonProcNetConn",str(computerName),str(proto),str(srcip),str(srcprt),str(dstip),str(dstprt),str(procId),str(procImage))
-   #event = broker.bro.Event("sysmonProcNetConn",str(computerName),str(proto),str(srcip),str(srcprt),str(dstip),str(dstprt),str(procId),str(procImage))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon Process Network Connect --- EventID5 --#
-def sysmonProcessTerminated(myJson):            #### EventID-5 ####
-   #print "EventID-5"
-   computerName = myJson["computer_name"]
-   event = myJson["event_data"]
-   image = event["Image"]
-   processGuid = event["ProcessGuid"]
-   processId = event["ProcessId"]
-   utcTime = event["UtcTime"]
-   # Create and send Bro Event  
-   event = broker.bro.Event("sysmonProcessTerminated",str(computerName),str(image),str(processGuid),str(processId),str(utcTime))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon Driver Loaded --- EventID6 --#
-def driverLoad(myJson):                         #### EventID-6 ####
-   #print "Entering driverLoad"
-   computerName = myJson["event_data"]
-   procId = myJson["process_id"]
-   #pprint.pprint(myJson)   
-   event = myJson["event_data"]
-   if "Hashes" in event:
-     hashes = event["Hashes"]
-   if "ImageLoaded" in event:
-     imageLoaded = event["ImageLoaded"]
-   signature = event["Signature"]
-   signatureStatus = event["SignatureStatus"]
-   signed = event["Signed"]
-   utcTime = event["UtcTime"]
-   event = broker.bro.Event("sysmonDriverLoaded",str(computerName),int(procId),str(hashes),str(imageLoaded),str(signature),str(signatureStatus),str(signed),str(utcTime))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon Image Loaded --- EventID7 --#
-# List of Events
-def imageLoaded(myJson):                          #### EventID-7 ####
-   computerName = myJson["event_data"]
-   event = myJson["event_data"]
-   utcTime = event["UtcTime"] 
-   procGuid = event["ProcessGuid"]
-   procId = event["ProcessId"]
-   image = event["Image"]
-   imageLoaded = event["ImageLoaded"]
-   hashes = event["Hashes"]
-   signed = event["Signed"]
-   sigStatus = event["SignatureStatus"]
-   if sigStatus == "Unavailable":
-     sig = "None"
-     #print "NO SIGNATURE AVAILABLE"
-   else:
-     sig = event["Signature"]
-
-   #print utcTime,procGuid,procId,image,imageLoaded,hashes,signed,sig,sigStatus
-   event = broker.bro.Event("sysmonImageLoaded",str(computerName),str(utcTime),str(procGuid),str(procId),str(image),str(imageLoaded),str(hashes),str(signed),str(sig),str(sigStatus))
-   endpoint.publish("/sysmon", event)
-
-
-
-#-- Sysmon Image Loaded --- EventID8 --#
-def createRemoteThread(myJson):                 #### EventID-8 ####
-   #print "Entering createRemoteThread"
-   event = myJson["event_data"]
-   #pprint.pprint(event)
-   computerName = myJson["computer_name"]
-   utcTime = event["UtcTime"]
-   sourceProcessGuid = event["SourceProcessGuid"]
-   sourceProcessId = event["SourceProcessId"]
-   sourceImage = event["SourceImage"] 
-   targetProcessId = event["TargetProcessId"]
-   targetImage = event["TargetImage"]
-   newThreadId = event["NewThreadId"]
-   startAddress = event["StartAddress"]
-   if 'StartModule' in event:
-     startModule = event["StartModule"]
-   else:
-     startModule = "NA"
-   if 'StartFunction' in event:
-     startFunction = event["StartFunction"]
-   else:
-     startFunction = "NA"
-   #print utcTime, sourceProcessGuid, sourceProcessId, sourceImage, targetProcessId, targetImage, newThreadId, startAddress, startModule, startFunction
-   event = broker.bro.Event("sysmonCreateRemoteThread",str(computerName),str(utcTime), str(sourceProcessGuid), str(sourceProcessId), str(sourceImage), str(targetProcessId), str(targetImage), str(newThreadId), str(startAddress), str(startModule), str(startFunction))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon Raw Access Read --- EventID9 --#
-def rawAccessRead(myJson):                      #### Event-ID-9 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   utcTime = event["UtcTime"]
-   processGuid = event["ProcessGuid"] 
-   processId = event["ProcessId"]
-   image = event["Image"]
-   device = event["Device"]
-   #print utcTime, processGuid, processId, image, device
-
-   event = broker.bro.Event("sysmonRawAccessRead",str(computerName),str(utcTime), str(processGuid), str(processId), str(image), str(device))
-   endpoint.publish("/sysmon", event)
-
-#-- Sysmon Process access --- EventID10 --#
-def processAccess(myJson):   #### Event ID: 10 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   grantedAccess = event["GrantedAccess"]
-   sourceImage = event["SourceImage"]
-   sourceProcGuid = event["SourceProcessGUID"]
-   sourceProcId = event["SourceProcessId"]
-   sourceThreadId = event["SourceThreadId"]
-   targetImage = event["TargetImage"]
-   targetProcGuid = event["TargetProcessGUID"]
-   targetProcId = event["TargetProcessId"]
-   utcTime = event["UtcTime"]
-   #pprint.pprint(myJson["event_data"])
-
-   #print computerName,grantedAccess,sourceImage,sourceProcGuid,sourceProcId,sourceThreadId,targetImage,targetProcGuid,targetProcId,utcTime
-
-   event = broker.bro.Event("sysmonProcAccess",str(computerName),str(grantedAccess),str(sourceImage),str(sourceProcGuid),str(sourceProcId),str(sourceThreadId),str(targetImage),str(targetProcGuid),str(targetProcId),str(utcTime))
-   endpoint.publish("/sysmon", event)
-  
-
-#-- Sysmon File Create --- EventID11 --#
-def sysmonFileCreate(myJson):           #### EventID-11 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   image = event["Image"]
-   processGuid = event["ProcessGuid"]
-   processId = event["ProcessId"]
-   targetFilename = event["TargetFilename"]
-   utcTime = event["UtcTime"]
-   #print ""
-   #print computerName,image,processGuid,processId,targetFilename,utcTime
-   #pprint.pprint(myJson)
-   event = broker.bro.Event("sysmonFileCreate",str(computerName),str(image),str(processGuid),str(processId),str(targetFilename),str(utcTime))
-   #print event
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon File Create --- EventID12,13,14 --#
-def regEventAddDel(myJson):             #### EventID-12 & 13 & 14 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   eventType = event["EventType"]  
-   utcTime = event["UtcTime"] 
-   processGuid = event["ProcessGuid"]
-   processId= event["ProcessId"]
-   image = event["Image"]
-   targetObject = event["TargetObject"]
-   if 'Details' in event:
-     details = event["Details"]
-   else:
-     details = "NA"
-
-   if 'NewName' in event:
-     newName = event["NewName"]
-   else:
-     newName = "NA"
-
-   #print eventType, utcTime, processGuid, processId, image, targetObject, details, newName
-   event = broker.bro.Event("sysmonRegEvent", str(computerName), str(eventType), str(utcTime), str(processGuid), str(processId), str(image), str(targetObject),details.encode('ascii','ignore'),newName.encode('ascii','ignore'))
-   endpoint.publish("/sysmon", event)
-
-#-- Sysmon File Create --- EventID15 --#
-def fileCreateStreamHash(myJson):               #### Event-ID-15 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   #pprint.pprint(myJson["event_data"])
-   utcTime = event["UtcTime"]
-   processGuid = event["ProcessGuid"]
-   processId = event["ProcessId"]
-   image = event["Image"] 
-   targetFilename = event["TargetFilename"]
-   creationUtcTime = event["CreationUtcTime"]
-   hash = event["Hash"]
-
-   #print computerName,utcTime,processGuid,processId,image,targetFilename,creationUtcTime,hash
-   event = broker.bro.Event("sysmonFileCreateStreamHash", str(computerName), str(utcTime),str(processGuid),str(processId),str(image),str(targetFilename),str(creationUtcTime),str(hash)) 
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon File Create --- EventID16 --#
-def configChange(myJson):                       #### Event-ID-16 ####
-   #print "###########################"
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   #pprint.pprint(myJson)
-   utcTime = event["UtcTime"]
-   config = event["Configuration"]
-   configFileHash = event["ConfigurationFileHash"]
-   #print utcTime,config,configFileHash
-   event = broker.bro.Event("sysmonConfigChange",str(computerName),str(utcTime),str(config),str(configFileHash))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon File Create --- EventID17&18 --#
-def pipeEvent(myJson,action):                   #### Event-ID-17 & 18 ####
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   utcTime = event["UtcTime"]
-   processGuid = event["ProcessGuid"]
-   processId = event["ProcessId"]
-   pipeName = event["PipeName"]
-   image = event["Image"]
-   #print utcTime, processGuid, processId, pipeName, image
-   event = broker.bro.Event("sysmonPipeEvent", str(computerName),str(action), str(utcTime), str(processGuid), str(processId), str(pipeName), str(image))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon File Create --- EventID19 --#
-def wmiEvent19(myJson): 
-   #pprint.pprint(myJson)
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   message = myJson["message"]
-   serviceGuid = event["serviceGuid"]
-   updateGuid = event["updateGuid"]
-   updateRevisionNumber = event["updateRevisionNumber"]
-   updateTitle = event["updateTitle"]
-   #print computerName, serviceGuid, updateGuid, updateRevisionNumber, updateTitle , message
-   event = broker.bro.Event("sysmonWmiEvent19", str(computerName),str(message), str(serviceGuid), str(updateGuid), str(updateRevisionNumber), str(updateTitle))
-   endpoint.publish("/sysmon", event)
-
-#-- Sysmon WMI Event --- EventID20 --#
-def wmiEvent20(myJson): 
-   #pprint.pprint(myJson)
-   event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   bootStatusPolicy = event["BootStatusPolicy"]
-   lastBootGood = event["LastBootGood"]
-   lastBootId = event["LastBootId"]
-   lastShutdownGood = event["LastShutdownGood"]
-   #print computerName, serviceGuid, updateGuid, updateRevisionNumber, updateTitle , message
-   event = broker.bro.Event("sysmonWmiEvent20", str(computerName),str(bootStatusPolicy), str(lastBootGood),str(lastBootId),str(lastShutdownGood))
-   endpoint.publish("/sysmon", event)
-
-
-#-- Sysmon WMI Event --- EventID20 --#
-def wmiEvent21(myJson):
-   #print "###################################################"
-   #pprint.pprint(myJson)
-   #event = myJson["event_data"]
-   computerName = myJson["computer_name"]
-   #bootStatusPolicy = event["BootStatusPolicy"]
-   #lastBootGood = event["LastBootGood"]
-   #lastBootId = event["LastBootId"]
-   #lastShutdownGood = event["LastShutdownGood"]
-   #print computerName, serviceGuid, updateGuid, updateRevisionNumber, updateTitle , message
-   #event = broker.bro.Event("sysmonWmiEvent20", str(computerName),str(bootStatusPolicy), str(lastBootGood),str(lastBootId),str(lastShutdownGood))
-   #endpoint.publish("/sysmon", event)
-
-   #print "###################################################"
-
-def holyHandGrenade():
-   #print "Event 5156"
-   event = broker.bro.Event("holyHandGrenade")
-   endpoint.publish("/sysmon", event)
-
-def generic_event(myJson):
-   message = myJson["message"]
-   event = broker.bro.Event("EventLogEvent",str(myJson["computer_name"]),int(myJson["event_id"]),message.encode('ascii','ignore'))
-   endpoint.publish("/sysmon", event)
-
-# ASDF - Here is where checking the event_ids start.
-
-for line in sys.stdin:
-#with ope('1.txt') as f:
-  #for line in f:
-    myJson = json.loads(line)
-    if 'event_data' not in myJson:
-      continue
-    event = myJson["event_data"]
-    sysmonEventId =  myJson["event_id"]
-
-    if sysmonEventId == 1:   
-      #continue					##### 	SUCCESSFULL! #####
-      #print "procCreation"
-      procCreation(myJson)
-
-    elif sysmonEventId == 2:
-      continue					####   SUCCESSFULL!  ####
-      #print "A process changed a file creation time"
-      procChangeFile(myJson)
-
-    elif sysmonEventId == 3:			####   SUCCESSFULL!  ####
-      #continue
-      #print "Network connection"
-      procnetconn(myJson)
-
-    elif sysmonEventId == 4:
-      #continue					#######  TODO
-      print "Sysmon service state changed"
-      #pprint.pprint(myJson)
-
-    elif sysmonEventId == 5:
-      #continue					###### SUCCESSFULL! #######
-      #print "Process terminated"
-      sysmonProcessTerminated(myJson)
-
-    elif sysmonEventId == 6:
-      #continue
-      print "Driver loaded"
-      driverLoad(myJson)
-
-    elif sysmonEventId == 7:
-      #continue
-      #print "Image loaded"
-      imageLoaded(myJson)
-
-    elif sysmonEventId == 8:
-      #continue
-      #print "CreateRemoteThread"
-      createRemoteThread(myJson)
-
-    elif sysmonEventId == 9:
-      #continue
-      #print "RawAccessRead"
-      rawAccessRead(myJson)
-
-    elif sysmonEventId == 10:
-      #continue
-      #print "ProcessAccess"
-      processAccess(myJson)
-
-    elif sysmonEventId == 11:
-      #continue
-      #print "sysmonFileCreate"
-      sysmonFileCreate(myJson)
-
-    elif sysmonEventId == 12:
-      #continue
-      #print " RegistryEvent (Object create and delete)"
-      regEventAddDel(myJson)
-
-    elif sysmonEventId == 13:
-      #continue
-      #print "RegistryEvent (Value Set)"
-      regEventAddDel(myJson)
-
-    elif sysmonEventId == 14:
-      #continue
-      #print "RegistryEvent (Key and Value Rename)"
-      regEventAddDel(myJson)
-
-    elif sysmonEventId == 15:
-      #continue
-      #print "FileCreateStreamHash"
-      fileCreateStreamHash(myJson)
-
-    elif sysmonEventId == 16:
-      #continue
-      #print "Sysmon Config Change"
-      configChange(myJson)
-
-    elif sysmonEventId == 17:
-      #continue
-      action = "PipeCreated"
-      #print "PipeEvent (Pipe Created)"
-      pipeEvent(myJson,action)
-
-    elif sysmonEventId == 18:
-      #continue
-      action = "PipeConnected"
-      #print "PipeEvent (Pipe Connected)"
-      pipeEvent(myJson,action)
-
-    elif sysmonEventId == 19:
-      #continue
-      #print "WmiEvent (WmiEventFilter activity detected)"
-      wmiEvent19(myJson)
-
-    elif sysmonEventId == 20:
-      #continue
-      #print "WmiEvent (WmiEventConsumer activity detected)"
-      wmiEvent20(myJson)
-
-    elif sysmonEventId == 21:
-      #continue
-      #print "WmiEvent (WmiEventConsumerToFilter activity detected)"
-      wmiEvent21(myJson)
-
-    elif sysmonEventId == 25:
-      #continue
-      #pprint.pprint(myJson)
-      print "Error"
-
-    elif sysmonEventId == 5156:
-      holyHandGrenade();
-
-    elif sysmonEventId == 4624:
-      print("#####################")
-      print("User Logon")
-      pprint.pprint(myJson)
-      #userLogon(myJson)
-      print("")
-
-    elif sysmonEventId == 4634:
-      print("#####################")
-      print("User Logoff")
-      pprint.pprint(myJson)
-      #userLogoff(myJson)
-      print("")
-
-    else:
-      #continue
-      print "EVENT ID NOT FOUND"
-      generic_event(myJson)
-      #print myJson["event_id"], myJson["message"]
-      #pprint.pprint(myJson)
-
-
-# Sending events to Broker   
-#    event = broker.bro.Event("sysmonProcNetConn",str(computerName),str(proto),str(srcip),str(srcprt),str(dstip),str(dstprt),str(procId),str(procImage))
-#    endpoint.publish("/sysmon", event)
-
-
+import json
+import pprint
+
+
+_DESCRIPTION = '''Convert Windows Event Log data into Bro events and transmit
+them via a broker topic.
+'''
+
+def generic_event(winevt):
+    try:
+        message = broker.bro.Event(
+            'WindowsEvent',
+            str(winevt.get('computer_name')),
+            str(winevt.get('log_name')),
+            int(winevt.get('event_id')),
+            str(winevt.get('task', 'None')),
+            str(winevt.get('opcode'))
+        )
+    except:
+        return 
+        #return None
+    
+    return message
+
+def logon_success(winevt):
+    evt_data = winevt.get('event_data')
+
+def object_sacl_changed(winevt):
+    evt_data = winevt.get('event_data')
+
+
+def process_creation(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+	    'process_created',
+	    winevt.get('computer_name').encode('ascii','ignore'),
+	    evt_data.get('ProcessId','ProcessID not provided').encode('ascii','ignore'),
+	    evt_data.get('CommandLine','CommandLine not provided').encode('ascii','ignore'),
+	    evt_data.get('Company','Company not provided').encode('ascii','ignore'),
+	    evt_data.get('CurrentDirectory','CurrentDirectory not provided').encode('ascii','ignore'),
+	    evt_data.get('Description','Description not provided').encode('ascii','ignore'),
+	    evt_data.get('FileVersion','FileVersion not provided').encode('ascii','ignore'),
+	    evt_data.get('Hashes','Hashes not provided').encode('ascii','ignore'),
+	    evt_data.get('Image','Image not provided').encode('ascii','ignore'),
+	    evt_data.get('IntegrityLevel','IntegrityLevel not provided').encode('ascii','ignore'),
+	    evt_data.get('LogonGuid','LogonGuid not provided').encode('ascii','ignore'),
+	    evt_data.get('LogonId','LogonId not provided').encode('ascii','ignore'),
+	    evt_data.get('ParentCommandLine','ParentCommandLine not provided').encode('ascii','ignore'),
+	    evt_data.get('ParentImage','ParentImage not provided').encode('ascii','ignore'),
+	    evt_data.get('ParentProcessGuid','ParentProcessGuid not provided').encode('ascii','ignore'),
+	    evt_data.get('ParentProcessId','ParentProcessId not provided').encode('ascii','ignore'),
+	    evt_data.get('ProcessGuid','ProcessGuid not provided').encode('ascii','ignore'),
+	    evt_data.get('Product','Product not provided').encode('ascii','ignore'),
+	    evt_data.get('TerminalSessionId','TerminalSessionId not provided').encode('ascii','ignore'),
+	    evt_data.get('User','User not provided').encode('ascii','ignore'),
+	    evt_data.get('UtcTime','UtcTime not provided').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return 
+    return message
+
+def process_change_file(winevt):
+    evt_data = winevt['event_data']
+    try:
+        message = broker.bro.Event(
+            'process_change_file_time',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('TargetFilename','None').encode('ascii','ignore'),
+            evt_data.get('CreationUtcTime','None').encode('ascii','ignore'),
+            evt_data.get('PreviousCreationUtcTime','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def network_connection(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_networkConnection',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('Protocol','None').encode('ascii','ignore'),
+            evt_data.get('SourceIp','None').encode('ascii','ignore'),
+            evt_data.get('SourcePort','None').encode('ascii','ignore'),
+            evt_data.get('DestinationIp','None').encode('ascii','ignore'),
+            evt_data.get('DestinationPort','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def service_change(winevt):
+    return
+    print "service_change"
+
+def process_terminated(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_procTerminate',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def driver_loaded(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_driverLoaded',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            winevt.get('process_id','None'),
+            evt_data.get('Hashes','None').encode('ascii','ignore'),
+            evt_data.get('ImageLoaded','None').encode('ascii','ignore'),
+            evt_data.get('Signature','None').encode('ascii','ignore'),
+            evt_data.get('SignatureStatus','None').encode('ascii','ignore'),
+            evt_data.get('Signed','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            #evt_data.get('','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def image_loaded(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_imageLoaded',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('ImageLoaded','None').encode('ascii','ignore'),
+            evt_data.get('Hashes','None').encode('ascii','ignore'),
+            evt_data.get('Signed','None').encode('ascii','ignore'),
+            evt_data.get('SignatureStatus','None').encode('ascii','ignore'),
+            #evt_data.get('','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def create_remote_thread(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_createRemoteThread',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('SourceProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('SourceProcessId','None').encode('ascii','ignore'),
+            evt_data.get('SourceImage','None').encode('ascii','ignore'),
+            evt_data.get('TargetProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('TargetProcessId','None').encode('ascii','ignore'),
+            evt_data.get('TargetImage','None').encode('ascii','ignore'),
+            evt_data.get('NewThreadId','None').encode('ascii','ignore'),
+            evt_data.get('StartAddress','None').encode('ascii','ignore'),
+            evt_data.get('StartModule','None').encode('ascii','ignore'),
+            evt_data.get('StartFunction','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def raw_access_read(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_rawAccessRead',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('Device','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def process_access(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_processAccess',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('GrantedAccess','None').encode('ascii','ignore'),
+            evt_data.get('SourceImage','None').encode('ascii','ignore'),
+            evt_data.get('SourceProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('SourceProcessId','None').encode('ascii','ignore'),
+            evt_data.get('SourceThreadId','None').encode('ascii','ignore'),
+            evt_data.get('TargetImage','None').encode('ascii','ignore'),
+            evt_data.get('TargetProcessGUID','None').encode('ascii','ignore'),
+            evt_data.get('TargetProcessId','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('CallTrace','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def file_create(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_fileCreate',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('TargetFilename','None').encode('ascii','ignore'),
+            evt_data.get('CreationUtcTime','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def registry_event(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_registryEvent',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('TargetFilename','None').encode('ascii','ignore'),
+            evt_data.get('CreationUtcTime','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('Details','None').encode('ascii','ignore'),
+            evt_data.get('NewName','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def file_create_stream_hash(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_fileCreateStreamHash',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+            evt_data.get('TargetFilename','None').encode('ascii','ignore'),
+            evt_data.get('CreationUtcTime','None').encode('ascii','ignore'),
+            evt_data.get('Hash','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def config_change(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_configChange',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('Configuration','None').encode('ascii','ignore'),
+            evt_data.get('ConfigurationFileHash','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def pipe_event(winevt):
+    if winevt['event_id'] == 17:
+        action = "PipeCreated"
+    if winevt['event_id'] == 18:
+        action = "PipeConnected"
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_pipeEvent',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            action,
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
+            evt_data.get('ProcessGuid','None').encode('ascii','ignore'),
+            evt_data.get('ProcessId','None').encode('ascii','ignore'),
+            evt_data.get('PipeName','None').encode('ascii','ignore'),
+            evt_data.get('Image','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def wmi_event_19(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_wmiEvent19',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            winevt.get('Message','None').encode('ascii','ignore'),
+            evt_data.get('ServiceGuid','None').encode('ascii','ignore'),
+            evt_data.get('UpdateRevisionNumber','None').encode('ascii','ignore'),
+            evt_data.get('UpdateTitle','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def wmi_event_20(winevt):
+    evt_data = winevt['event_data']
+
+    try:
+        message = broker.bro.Event(
+            'sysmon_wmiEvent20',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('BootStatusPolicy','None').encode('ascii','ignore'),
+            evt_data.get('LastBootGood','None').encode('ascii','ignore'),
+            evt_data.get('LastBootId','None').encode('ascii','ignore'),
+            evt_data.get('LastShutdownGood','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+
+def wmi_event_21(winevt):
+    evt_data = winevt['event_data']
+    
+    try:
+        message = broker.bro.Event(
+            'sysmon_wmiEvent21',
+            winevt.get('computer_name').encode('ascii','ignore'),
+            evt_data.get('BootStatusPolicy','None').encode('ascii','ignore'),
+            evt_data.get('LastBootGood','None').encode('ascii','ignore'),
+            evt_data.get('LastBootId','None').encode('ascii','ignore'),
+            evt_data.get('LastShutdownGood','None').encode('ascii','ignore'),
+        )
+    except Exception as e:
+        return
+    return message
+
+def sysmon_error(winevt):
+    print "Error"
+
+_security_event_map = {
+    # 4634: logoff_success,
+    #4907: object_sacl_changed,
+}
+
+_system_event_map = dict(
+    
+)
+
+_sysmon_event_map = {
+	1:   process_creation,
+	2:   process_change_file,
+	3:   network_connection,
+	4:   service_change,
+	5:   process_terminated,
+	6:   driver_loaded,
+	7:   image_loaded,
+	8:   create_remote_thread,
+	9:   raw_access_read,
+	10:  process_access,
+	11:  file_create,
+	12:  registry_event,
+	13:  registry_event,
+	14:  registry_event,
+	15:  file_create_stream_hash,
+	16:  config_change,
+	17:  pipe_event,
+	18:  pipe_event,
+	19:  wmi_event_19,
+	20:  wmi_event_20,
+	21:  wmi_event_21,
+	25:  sysmon_error
+}
+
+_event_map = {
+    "Security": _security_event_map,
+    "System": _system_event_map,
+    #Sysmon: _sysmon_event_map
+    "Microsoft-Windows-Sysmon/Operational": _sysmon_event_map
+}
+
+def main(c, file_in):
+    with open(file_in, 'r') as f:
+        for line in f:
+            try:
+                winevt = json.loads(line)
+            except JSONDecodeError:
+                continue
+
+	    if winevt['event_id'] == 19:
+		print winevt
+	    if str(winevt.get('log_name')) == 'Microsoft-Windows-Sysmon/Operational':
+	        myLogName = 'Sysmon'
+	    else:
+		myLogName = winevt['log_name']
+
+            # this is a bit complicated, so to break it down:
+            # 1. Look in _event_map for a log name to map events to a func
+            #  if it doesn't match, return a dict so that nothing is wrong
+            #  in the following call where:
+            # 2. An event is then mapped with event_id using one of the 
+            #  specific event log maps. If one doesn't match, then the 
+            #  generic event handler is used.
+            build_message = _event_map.get(str(winevt.get('log_name')), 
+                dict()).get(winevt.get('event_id'), generic_event)
+            # use the matched event handler and publish it to the winevt
+            # broker topic
+            msg = build_message(winevt)
+            # if they error, the event handlers return None
+            if msg:
+                c.publish('/sysmon', msg)
+
+if __name__ == '__main__':
+    p = ArgumentParser(description=_DESCRIPTION)
+    p.add_argument('broker_peer',
+                    help='Peer to connect to.')
+    p.add_argument('file_in',
+                    help='File to read events from.')
+    args = p.parse_args()
+
+    c = broker.Endpoint()
+    c.peer(args.broker_peer, 9999)
+
+main(c, args.file_in)
