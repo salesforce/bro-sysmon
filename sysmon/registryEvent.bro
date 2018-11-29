@@ -37,10 +37,9 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::RegistryEvent, [$columns=registryEvent, $ev=log_registryEvent, $path="sysmon_registryEvent"]);
 }
 
-event sysmonRegEvent(computerName: string,eventType: string, utcTime: string, processGuid: string, processId: string, image: string, targetObject: string, details: string, newName: string)
+event sysmon_registryEvent(computerName: string,eventType: string, utcTime: string, processGuid: string, processId: string, image: string, targetObject: string, details: string, newName: string)
 {
 local r: registryEvent;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$processGuid = processGuid;
@@ -50,6 +49,5 @@ r$targetObject = targetObject;
 r$details = details;
 r$newName = newName;
 
-#print "Writing log";
 Log::write(Sysmon::RegistryEvent, r);
 }
