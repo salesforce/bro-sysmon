@@ -35,10 +35,10 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::PipeEvent, [$columns=pipeEvent, $ev=log_pipeEvent, $path="sysmon_pipeEvent"]);
 }
 
-event sysmonPipeEvent(computerName: string, action: string,  utcTime: string, processGuid: string, processId: string, pipeName: string, image: string)
+event sysmon_pipeEvent(computerName: string, action: string,  utcTime: string, processGuid: string, processId: string, pipeName: string, image: string)
 {
 local r: pipeEvent;
-print "HERE";
+#print "Pipe Event";
 r$computerName = computerName;
 r$action = action;
 r$utcTime = utcTime;
@@ -47,6 +47,5 @@ r$processId = processId;
 r$pipeName = pipeName;
 r$image = image;
 
-print "Writing log";
 Log::write(Sysmon::PipeEvent, r);
 }
