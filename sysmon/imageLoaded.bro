@@ -24,7 +24,6 @@ export {
         imageLoaded: string &log &optional;
         hashes: string &log &optional;
         signed: string &log &optional;
-        sig: string &log &optional;
         sigStatus: string &log &optional;
         };
 
@@ -38,10 +37,9 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::ImageLoaded, [$columns=sysimageLoaded, $ev=log_imageLoad, $path="sysmon_imageLoaded"]);
 }
 
-event sysmonImageLoaded(computerName: string,utcTime: string,procGuid: string,processId: string,image: string,imageLoaded: string,hashes: string,signed: string,sig: string,sigStatus: string)
+event sysmon_imageLoaded(computerName: string,utcTime: string,procGuid: string,processId: string,image: string,imageLoaded: string,hashes: string,signed: string,sigStatus: string)
 {
 local r: sysimageLoaded;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$procGuid = procGuid;
@@ -49,10 +47,7 @@ r$processId = processId;
 r$imageLoaded = imageLoaded;
 r$hashes = hashes;
 r$signed = signed;
-r$sig = sig;
 r$sigStatus = sigStatus;
 
-
-#print "Writing log";
 Log::write(Sysmon::ImageLoaded, r);
 }
