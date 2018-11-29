@@ -13,32 +13,31 @@ module Sysmon;
 export {
     redef enum Log::ID += { NETCONN };
 
-    type Info: record {
+    type netConn: record {
         hostname:       string &log &optional;
         processId:              string  &log &optional;
         orig_h:         addr    &log    &optional;
         orig_p:         port    &log    &optional;
         resp_h:         addr    &log    &optional;
         resp_p:         port    &log    &optional;
-        ja3:            string  &log    &optional;
         procImage:      string  &log &optional;
     };
 
-    global log_sysmon_netconnect: event(rec: Info);
+    global log_sysmon_netconnect: event(rec: netConn);
 }
 
 event bro_init() &priority=5
     {
-    Log::create_stream(Sysmon::NETCONN, [$columns=Info, $ev=log_sysmon_netconnect, $path="sysmon_netconnect"]);
+    Log::create_stream(Sysmon::NETCONN, [$columns=netConn, $ev=log_sysmon_netconnect, $path="sysmon_netconnect"]);
 }
 
-event sysmonProcNetConn(computerName: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, processId: string, procImage: string)
+event sysmon_networkConnection(computerName: string, processId: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, procImage: string)
 {
   local orig_h = to_addr(srcip);
   local orig_p =  to_port(string_cat(srcprt,"/",proto));
   local resp_h = to_addr(dstip);
   local resp_p =  to_port(string_cat(dstprt,"/",proto));
-  local r: Info;
+  local r: netConn;
   
   r$hostname = computerName;
   r$orig_h = orig_h;
@@ -47,9 +46,7 @@ event sysmonProcNetConn(computerName: string, proto: string, srcip: string, srcp
   r$resp_p = resp_p;
   r$processId = processId;
   r$procImage = procImage;
-  #print r;
-  #print "Received Process Network Connect ID 3 ", network_time(); 
-Log::write(Sysmon::NETCONN, r);
 
+Log::write(Sysmon::NETCONN, r);
 }
 
