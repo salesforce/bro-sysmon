@@ -18,6 +18,7 @@ export {
     type procCreate:record {
 	computerName: string		&log &optional;
 	processId: string		&log &optional;
+        commandLine:	string		&log &optional;
 	company: string		&log &optional;
 	currentDirectory: string		&log &optional;
 	description: string		&log &optional;
@@ -48,10 +49,9 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::LOG, [$columns=procCreate, $ev=log_procCreate, $path="sysmon_procCreate"]);
 }
 
-event sysmonProcCreation(computerName: string,company: string,currentDirectory: string,description: string,fileVersion: string,hashes: string,image: string,integrityLevel: string,logonGuid: string,logonId: string,parentCommandline: string,parentImage: string,parentProcessGuid: string,parentProcessId: string,processGuid: string,processId: string,product: string,terminalSessionId: string,user: string,utcTime: string)
+event process_created(computerName: string,processId: string,commandLine: string;company: string,currentDirectory: string,description: string,fileVersion: string,hashes: string,image: string,integrityLevel: string,logonGuid: string,logonId: string,parentCommandline: string,parentImage: string,parentProcessGuid: string,parentProcessId: string,processGuid: string,product: string,terminalSessionId: string,user: string,utcTime: string)
 {
 local r: procCreate;
-#print computerName, company, description, hashes, image, parentCommandline;
 r$computerName = computerName;
 r$company = company;
 r$currentDirectory = currentDirectory;
@@ -72,6 +72,5 @@ r$terminalSessionId = terminalSessionId;
 r$user = user;
 r$utcTime = utcTime;
 
-#print "Writing log";
 Log::write(Sysmon::LOG, r);
 }
