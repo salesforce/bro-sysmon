@@ -22,6 +22,7 @@ export {
         processGuid: string &log &optional;
         targetFilename: string &log &optional;
         utcTime: string &log &optional;
+        creationUtcTime: string &log &optional;
         };
 
 
@@ -34,12 +35,13 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::FileCreate, [$columns=fileCreate, $ev=log_fileCreate, $path="sysmon_fileCreate"]);
 }
 
-event sysmonFileCreate(computerName: string,image: string,processGuid: string,processId: string,targetFilename: string,utcTime: string)
+event sysmon_fileCreate(computerName: string,image: string,processGuid: string,processId: string,targetFilename: string, creationUtcTime: string, utcTime: string)
 {
 local r: fileCreate;
-#print "HERE";
+print "File Created";
 r$computerName = computerName;
 r$utcTime = utcTime;
+r$creationUtcTime = creationUtcTime;
 r$processGuid = processGuid;
 r$processId = processId;
 r$targetFilename = targetFilename;
