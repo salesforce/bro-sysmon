@@ -1,6 +1,5 @@
 [package]
 script_dir = sysmon
 description = Zeek-Sysmon contains a python script that will read in a file, parse JSON Windows Event Logs, generate Zeek events, and forward them to Zeek.  Default Zeek-Sysmon scripts log output to files.
-    https://github.com/salesforce/bro-sysmon
 tags = broker, Windows, Event Logs, Sysmon, logging
 version = 1.0.0
