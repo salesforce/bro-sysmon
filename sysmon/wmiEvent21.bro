@@ -15,7 +15,6 @@ export {
 
     redef enum Log::ID += {WmiEvent};
 
-
     type wmiEvent:record {
 	computerName: string &log &optional;
 	processId: string &log &optional;
@@ -26,20 +25,17 @@ export {
 	image: string &log &optional;
 	};
 
-
     global log_wmiEvent: event(rec: wmiEvent);
 }
-
 
 event bro_init() &priority=5
     {
     Log::create_stream(Sysmon::WmiEvent, [$columns=wmiEvent, $ev=log_wmiEvent, $path="sysmon_wmiEvent21"]);
 }
 
-event sysmonWmiEvent(computerName: string, action: string,  utcTime: string, processGuid: string, processId: string, pipeName: string, image: string)
+event sysmon_wmiEvent(computerName: string, action: string,  utcTime: string, processGuid: string, processId: string, pipeName: string, image: string)
 {
 local r: wmiEvent;
-#print "HERE";
 r$computerName = computerName;
 r$action = action;
 r$utcTime = utcTime;
@@ -48,7 +44,5 @@ r$processId = processId;
 r$pipeName = pipeName;
 r$image = image;
 
-#print "Writing log";
 Log::write(Sysmon::WmiEvent, r);
 }
-
