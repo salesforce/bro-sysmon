@@ -33,7 +33,7 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::WmiEvent20, [$columns=wmiEvent20, $ev=log_wmiEvent20, $path="sysmon_wmiEvent20"]);
 }
 
-event sysmonWmiEvent20(computerName: string, bootStatusPolicy: string,  lastBootGood: string, lastBootId: string, lastShutdownGood: string)
+event sysmon_wmiEvent20(computerName: string, bootStatusPolicy: string,  lastBootGood: string, lastBootId: string, lastShutdownGood: string)
 {
 local r: wmiEvent20;
 #print "HERE";
