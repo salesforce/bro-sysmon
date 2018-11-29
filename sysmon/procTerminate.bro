@@ -12,7 +12,7 @@ module Sysmon;
 
 export {
 
-    redef enum Log::ID += {ProcTerminate};
+    redef enum Log::ID += {PROCTERMINATE};
 
 
     type procTerminate:record {
@@ -30,20 +30,17 @@ export {
 
 event bro_init() &priority=5
     {
-    Log::create_stream(Sysmon::ProcTerminate, [$columns=procTerminate, $ev=log_procTerminate, $path="sysmon_procTerminate"]);
+    Log::create_stream(Sysmon::PROCTERMINATE, [$columns=procTerminate, $ev=log_procTerminate, $path="sysmon_procTerminate"]);
 }
 
-event sysmonProcessTerminated(computerName: string, image: string, processGuid: string, processId: string, utcTime: string)
+event sysmon_procTerminate(computerName: string, image: string, processGuid: string, processId: string, utcTime: string)
 {
 local r: procTerminate;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$image = image;
 r$processGuid = processGuid;
 r$processId = processId;
 
-
-#print "Writing log";
-Log::write(Sysmon::ProcTerminate, r);
+Log::write(Sysmon::PROCTERMINATE, r);
 }
