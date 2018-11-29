@@ -35,10 +35,11 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::FileTimeChange, [$columns=procChngFileTime, $ev=log_procChngFileTime, $path="sysmon_procChngFileTime"]);
 }
 
-event sysmonProcChangeFile(computerName: string,utcTime: string,processGuid: string,processId: string,targetFilename: string,creationUtcTime: string,previousCreationUtcTime: string)
+event process_change_file_time(computerName: string,processId: string,utcTime: string,processGuid: string,targetFilename: string,creationUtcTime: string,previousCreationUtcTime: string, image:string)
+
+#event sysmonProcChangeFile(computerName: string,utcTime: string,processGuid: string,processId: string,targetFilename: string,creationUtcTime: string,previousCreationUtcTime: string)
 {
 local r: procChngFileTime;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$processGuid = processGuid;
@@ -46,7 +47,6 @@ r$processId = processId;
 r$targetFilename = targetFilename;
 r$creationUtcTime = creationUtcTime;
 r$previousCreationUtcTime = previousCreationUtcTime;
-
 
 #print "Writing log";
 Log::write(Sysmon::FileTimeChange, r);
