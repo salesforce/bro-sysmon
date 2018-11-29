@@ -36,10 +36,10 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::DriverLoaded, [$columns=driverLoaded, $ev=log_driverLoaded, $path="sysmon_driverLoaded"]);
 }
 
-event sysmonDriverLoaded(computerName: string, processId: int, hashes: string; imageLoaded: string, signature: string, signatureStatus: string, signed: string, utcTime: string)
+event sysmon_driverLoaded(computerName: string, processId: int, hashes: string; imageLoaded: string, signature: string, signatureStatus: string, signed: string, utcTime: string)
 {
 local r: driverLoaded;
-#print "HERE";
+print "Driver Loaded";
 r$computerName = computerName;
 r$processId = processId;
 r$hashes = hashes;
