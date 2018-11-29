@@ -37,7 +37,7 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::FileCreateStreamHash, [$columns=fileCreateStreamHash, $ev=log_fileCreateStreamHash, $path="sysmon_fileCreateStreamHash"]);
 }
 
-event sysmonFileCreateStreamHash(computerName: string, utcTime: string, processGuid: string, processId: string, image: string, targetFilename: string, creationUtcTime: string, hash: string)
+event sysmon_fileCreateStreamHash(computerName: string, utcTime: string, processGuid: string, processId: string, image: string, targetFilename: string, creationUtcTime: string, hash: string)
 {
 local r: fileCreateStreamHash;
 #print "HERE";
