@@ -34,7 +34,7 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::WmiEvent19, [$columns=wmiEvent19, $ev=log_wmiEvent19, $path="sysmon_wmiEvent19"]);
 }
 
-event sysmonWmiEvent19(computerName: string,  utcTime: string, serviceGuid: string, updateGuid: string, updateRevisionNumber: string, updateTitle: string)
+event sysmon_wmiEvent19(computerName: string,  utcTime: string, serviceGuid: string, updateGuid: string, updateRevisionNumber: string, updateTitle: string)
 {
 local r: wmiEvent19;
 #print "HERE";
