@@ -14,7 +14,6 @@ export {
 
     redef enum Log::ID += {ProcessAccess};
 
-
     type processAccess:record {
         computerName: string &log &optional;
         sourceProcessId: string &log &optional;
@@ -27,22 +26,20 @@ export {
         targetProcGuid: string &log &optional;
         targetProcessId: string &log &optional;
         utcTime: string &log &optional;
+    	callTrace: string	&log	&optional;
         };
-
 
     global log_processAccess: event(rec: processAccess);
 }
-
 
 event bro_init() &priority=5
     {
     Log::create_stream(Sysmon::ProcessAccess, [$columns=processAccess, $ev=log_processAccess, $path="sysmon_processAccess"]);
 }
 
-event sysmonProcAccess(computerName: string, grantedAccess: string,sourceImage: string,sourceProcGuid: string,sourceProcessId: string,sourceThreadId: string,targetImage: string,targetProcGuid: string,targetProcessId: string,utcTime: string)
+event sysmon_processAccess(computerName: string, grantedAccess: string,sourceImage: string,sourceProcGuid: string,sourceProcessId: string,sourceThreadId: string,targetImage: string,targetProcGuid: string,targetProcessId: string,utcTime: string, callTrace: string)
 {
 local r: processAccess;
-#print "HERE";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$grantedAccess = grantedAccess;
@@ -53,8 +50,7 @@ r$sourceThreadId = sourceThreadId;
 r$targetImage = targetImage;
 r$targetProcGuid = targetProcGuid;
 r$targetProcessId = targetProcessId;
+r$callTrace = callTrace;
 
-#print "Writing log";
 Log::write(Sysmon::ProcessAccess, r);
 }
-
