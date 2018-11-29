@@ -2,7 +2,7 @@
 How to Zeek Sysmon logs.
 
 ## Overview
-Zeek-Sysmon enables Zeek to receive Windows Event Logs.  This provide a method to associate Network Monitoring and Host Monitoring.  The work was spurred by the need to associate [JA3 fingerprints](https://engineering.salesforce.com/open-sourcing-ja3-92c9e53c3c41) with the application on the host.  The example below shows the hostname, Process ID, connection information, JA3 fingerprints, Application Path, and binary algorithms.
+Zeek-Sysmon enables Zeek to receive Windows Event Logs.  This provide a method to associate Network Monitoring and Host Monitoring.  The work was spurred by the need to associate [JA3](https://engineering.salesforce.com/open-sourcing-ja3-92c9e53c3c41) and [HASSH](https://engineering.salesforce.com/open-sourcing-hassh-abed3ae5044c) fingerprints with the application on the host.  The example below shows the hostname, Process ID, connection information, JA3 fingerprints, Application Path, and binary hashes.
 ~~~
 blocky-PC	3200	192.168.200.100	59356	172.217.7.163	443	
 	e7901d17482da52152fff3e9afadfa57	85acb5f1aec131b9897ae1fc1f22aff3
