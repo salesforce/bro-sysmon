@@ -1,4 +1,4 @@
-# This script handles generaic Windows Event logs and simply writes out the message to a sysmon_# This script parses Windows Event Logs in JSON format and forwards events to the Bro Platform.
+# This script handles generaic Windows Event logs and simply writes out the message to winevt_generic
 # Version 1.0 (November 2018)
 #
 # Authors: Jeff Atkinson (jatkinson@salesforce.com)
@@ -22,7 +22,11 @@ export {
     type Info: record {
         hostname:       string  &log    &optional;
         event_id:       int     &log    &optional;
+        log_name:       string     &log    &optional;
+        task:       string     &log    &optional;
+        opcode:       string     &log    &optional;
         message:        string  &log    &optional;
+        event_data:        string  &log    &optional;
     };
 
     global log_eventLogMessage: event(rec: Info);
@@ -30,22 +34,27 @@ export {
 }
 
 event bro_init() { 
-    Log::create_stream(Sysmon::EVENTLOG, [$columns=Info, $ev=log_eventLogMessage, $path="sysmon_eventLogMessage"]);
+    Log::create_stream(Sysmon::EVENTLOG, [$columns=Info, $ev=log_eventLogMessage, $path="winevt_generic"]);
 }
 
 
 
 
-event EventLogEvent(computerName: string, event_id: int, message: string) {
+event WindowsEvent(computerName: string, log_name: string, event_id: int, task: string, opcode: string, message: string, event_data: string) {
 
 local r: Info;
 
-#print computerName, gsub(message,/\x09/,"#####");
+print computerName, event_id, gsub(message,/\x09/,"#####");
   r$hostname = computerName;
   r$event_id = event_id;
+  r$log_name = log_name;
+  r$task = task;
+  r$opcode = opcode;
   local message1 = gsub(message,/\x09/," ");
   local message2 = gsub(message1,/\x0a/," ");
   r$message = message2;
+  #r$event_data = event_data;
+  
 
 Log::write(Sysmon::EVENTLOG, r);
 

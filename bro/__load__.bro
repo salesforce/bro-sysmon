@@ -24,6 +24,6 @@
 @load ./pipeEvent.bro               #-- Sysmon EventID 17 & 18 --#
 @load ./wmiEvent19.bro              #-- Sysmon EventID 19 --#
 @load ./wmiEvent20.bro              #-- Sysmon EventID 20 --#
-@load ./eventLogMessage.bro         #-- Log Messages of the rest of Windows Event Logs --#
-@load ./mapJA3_Proc.bro
-@load ./mapHASSH.bro
+@load ./windowsEvent
+
+#@load ./fingerprint_mapping
