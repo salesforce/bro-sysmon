@@ -1,21 +1,10 @@
 #!/usr/bin/env python
 
-# This script handles Sysmon's Driver Loaded event and writes content out to sysmon_driverLoaded.log.
-# Version 1.0 (November 2018)
-#
-# Authors: Jeff Atkinson (jatkinson@salesforce.com)
-#
-# Copyright (c) 2017, salesforce.com, inc.
-# All rights reserved.
-# Licensed under the BSD 3-Clause license. 
-# For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
-
 from argparse import ArgumentParser
 
 import broker
 import json
 import pprint
-
 
 _DESCRIPTION = '''Convert Windows Event Log data into Bro events and transmit
 them via a broker topic.
@@ -28,13 +17,17 @@ def generic_event(winevt):
             str(winevt.get('computer_name')),
             str(winevt.get('log_name')),
             int(winevt.get('event_id')),
+            str(winevt.get('opcode')),
             str(winevt.get('task', 'None')),
-            str(winevt.get('opcode'))
+            str(winevt.get('message', 'None')),
+            str(winevt.get('event_data', 'None')),
         )
-    except:
+    except Exception as e:
+        print(e)
         return 
         #return None
-    
+ 
+   
     return message
 
 def logon_success(winevt):
