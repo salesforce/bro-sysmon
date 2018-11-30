@@ -44,7 +44,6 @@ event WindowsEvent(computerName: string, log_name: string, event_id: int, task: 
 
 local r: Info;
 
-print computerName, event_id, gsub(message,/\x09/,"#####");
   r$hostname = computerName;
   r$event_id = event_id;
   r$log_name = log_name;

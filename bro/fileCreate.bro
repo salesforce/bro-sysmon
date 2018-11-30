@@ -38,7 +38,6 @@ event bro_init() &priority=5
 event sysmon_fileCreate(computerName: string,image: string,processGuid: string,processId: string,targetFilename: string, creationUtcTime: string, utcTime: string)
 {
 local r: fileCreate;
-print "File Created";
 r$computerName = computerName;
 r$utcTime = utcTime;
 r$creationUtcTime = creationUtcTime;
