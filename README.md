@@ -76,7 +76,7 @@ Output: Host blocky-PC spawned ProcessID 3968, C:\Users\blocky\Desktop\putty.exe
 A8A1831F0A2675351B5FF	C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe	Low	{7A15C4BA-936D-5BDC-0100-0020642C5435}	0x135542c64	"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" 	C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe	{7A15C4BA-F08F-5BEE-0100-00109E978637}	4584	-	?	2	blocky-PC\\blocky	2018-11-16 16:30:09.143
 ```
 ## Credits
-Zeek-Sysmon concept was conceived and developed by Jeff Atkinson (@4a7361).  Special thanks goes out to Kevin Thompson (@bfist), @tenzir_company and @0xHosom.
+Zeek-Sysmon concept was conceived and developed by Jeff Atkinson ([@4a7361](https://twitter.com/4a7361)).  Special thanks goes out to Kevin Thompson ([@bfist](https://twitter.com/bfist)), [@tenzir_company](https://twitter.com/tenzir_company) and [@0xHosom](https://twitter.com/0xHosom).
 
 ## License
 Zeek-Sysmon comes with a [3-Clause BSD license](./LICENSE.txt)
