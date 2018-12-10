@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+# This script handles Sysmon Configuration Change events and writes to sysmon_configChange.log.
+# Version 1.0 (November 2018)
+#
+# Authors: Jeff Atkinson (jatkinson@salesforce.com)
+#
+# Copyright (c) 2017, salesforce.com, inc.
+# All rights reserved.
+# Licensed under the BSD 3-Clause license. 
+# For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
 
 from argparse import ArgumentParser
 
