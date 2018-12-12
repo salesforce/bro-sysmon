@@ -13,8 +13,7 @@ module Sysmon;
 global trackPID: table[string,int] of procCreate &redef;
 #global trackPID: table[string,int] of string &redef;
 
-
-event sysmonProcCreation(computerName: string,company: string,currentDirectory: string,description: string,fileVersion: string,hashes: string,image: string,integrityLevel: string,logonGuid: string,logonId: string,parentCommandline: string,parentImage: string,parentProcessGuid: string,parentProcessId: string,processGuid: string,processId: string,product: string,terminalSessionId: string,user: string,utcTime: string)
+event process_created(computerName: string,processId: string,commandLine: string;company: string,currentDirectory: string,description: string,fileVersion: string,hashes: string,image: string,integrityLevel: string,logonGuid: string,logonId: string,parentCommandline: string,parentImage: string,parentProcessGuid: string,parentProcessId: string,processGuid: string,product: string,terminalSessionId: string,user: string,utcTime: string)
 {
 
 # Creating record to add to table.
