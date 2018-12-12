@@ -432,10 +432,19 @@ _event_map = {
 
 def main(c, file_in):
     with open(file_in, 'r') as f:
-        for line in f:
+#     for line in f:
+      while 1:
+	where = f.tell()
+	line = f.readline()
+	if not line:
+	    time.sleep(1)
+	    f.seek(where)
+	else:
+            print("Found line")
             try:
                 winevt = json.loads(line)
             except JSONDecodeError:
+  		print("JSON Decode Error")
                 continue
 
 	    if winevt['event_id'] == 19:
@@ -460,6 +469,7 @@ def main(c, file_in):
             # if they error, the event handlers return None
             if msg:
                 c.publish('/sysmon', msg)
+		continue
 
 if __name__ == '__main__':
     p = ArgumentParser(description=_DESCRIPTION)
@@ -472,4 +482,4 @@ if __name__ == '__main__':
     c = broker.Endpoint()
     c.peer(args.broker_peer, 9999)
 
-main(c, args.file_in)
+main(c,args.file_in)
