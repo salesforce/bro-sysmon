@@ -18,7 +18,7 @@ type ProcDetails: record {
 
 global tableNetConns: table[conn_id] of ProcDetails &redef;
 
-event sysmonProcNetConn(computerName: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, processId: string, procImage: string)
+event sysmon_networkConnection(computerName: string, processId: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, procImage: string)
 {
   local orig_h = to_addr(srcip);
   local orig_p =  to_port(string_cat(srcprt,"/",proto));
