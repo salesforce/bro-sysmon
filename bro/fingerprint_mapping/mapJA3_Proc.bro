@@ -39,9 +39,10 @@ event connection_state_remove(c: connection)
 {
 if ( !c?$ssl ) { return; }
 if ( !c$ssl?$ja3 ) { return; }
-print "Looking in table";
+if ( !c$ssl?$ja3s) { c$ssl$ja3s = "none"; }
+#print "Looking in table";
 if ( c$id in tableNetConns ) {
-   print "Found it!";
+   #print "Found it!";
    local etwNetConn =  tableNetConns[c$id];
    local myComputerName = etwNetConn$computerName;
    local myProcessId = etwNetConn$processId;

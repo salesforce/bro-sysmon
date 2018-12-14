@@ -12,6 +12,10 @@ module Sysmon;
 
 event bro_init()
 {
-Broker::subscribe("/sysmon");
+    Broker::subscribe("/sysmon");
 
+    # Be aware that these variables may be defined by other modules.  eg. Bro-OSQuery
+    Broker::listen(broker_ip, broker_port);
 }
+
+

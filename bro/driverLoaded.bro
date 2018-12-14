@@ -39,7 +39,7 @@ event bro_init() &priority=5
 event sysmon_driverLoaded(computerName: string, processId: int, hashes: string; imageLoaded: string, signature: string, signatureStatus: string, signed: string, utcTime: string)
 {
 local r: driverLoaded;
-print "Driver Loaded";
+#print "Driver Loaded";
 r$computerName = computerName;
 r$processId = processId;
 r$hashes = hashes;

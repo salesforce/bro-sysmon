@@ -33,6 +33,7 @@ event bro_init() &priority=5
 
 event sysmon_networkConnection(computerName: string, processId: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, procImage: string)
 {
+#print "Network Connection";
   local orig_h = to_addr(srcip);
   local orig_p =  to_port(string_cat(srcprt,"/",proto));
   local resp_h = to_addr(dstip);

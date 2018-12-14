@@ -41,16 +41,16 @@ event bro_init() {
 event connection_state_remove(c: connection)
 {
 if ( !c?$ssh ) { return; }
-print "Looking in table";
+#print "Looking in table";
 if ( c$id in tableNetConns ) {
-   print "Found it!";
-   print fmt("######### %s",tableNetConns[c$id]);
+   #print "Found it!";
+   #print fmt("######### %s",tableNetConns[c$id]);
    local etwNetConn =  tableNetConns[c$id];
    local myComputerName = etwNetConn$computerName;
    local myProcessId = etwNetConn$processId;
    local myProcImage = etwNetConn$procImage;
    #print c$ssh;
-   print fmt("Here's the details of that PID %s", trackPID[myComputerName,to_int(myProcessId)]);
+   #print fmt("Here's the details of that PID %s", trackPID[myComputerName,to_int(myProcessId)]);
   local r: mapHASSHProc;
   r$hostname = myComputerName;
   r$processId = myProcessId;

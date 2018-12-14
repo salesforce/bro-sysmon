@@ -17,11 +17,14 @@ export {
 
     type wmiEvent19:record {
 	computerName: string &log &optional;
+	process_id: int &log &optional;
+	eventNamespace: string &log &optional;
+	eventType: string &log &optional;
+	name: string &log &optional;
+	operation: string &log &optional;
+	query: string &log &optional;
+	user: string &log &optional;
 	utcTime: string &log &optional;
-	serviceGuid: string &log &optional;
-	updateGuid: string &log &optional;
-	updateRevisionNumber: string &log &optional;
-	updateTitle: string &log &optional;
 	};
 
 
@@ -34,16 +37,18 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::WmiEvent19, [$columns=wmiEvent19, $ev=log_wmiEvent19, $path="sysmon_wmiEvent19"]);
 }
 
-event sysmon_wmiEvent19(computerName: string,  utcTime: string, serviceGuid: string, updateGuid: string, updateRevisionNumber: string, updateTitle: string)
+event sysmon_wmiEvent19(computer_name: string, process_id: int, eventNamespace: string, eventType: string, name: string, operation: string, query: string, user: string, utcTime: string)
 {
 local r: wmiEvent19;
-#print "HERE";
-r$computerName = computerName;
+#print "WMI Event 19";
+r$computerName = computer_name;
+r$process_id = process_id;
+r$eventNamespace = eventNamespace;
+r$eventType = eventType;
+r$name = name;
+r$operation = operation;
+r$query = query;
 r$utcTime = utcTime;
-r$serviceGuid = serviceGuid;
-r$updateGuid = updateGuid;
-r$updateRevisionNumber = updateRevisionNumber;
-r$updateTitle = updateTitle;
 
 #print "Writing log";
 Log::write(Sysmon::WmiEvent19, r);

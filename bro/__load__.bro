@@ -7,7 +7,8 @@
 # Licensed under the BSD 3-Clause license. 
 # For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
 
-@load  ./sysmon_subscribe           #-- Subscribe to broker /sysmon --#
+@load ./sysmon_variables
+@load ./sysmon_subscribe           #-- Subscribe to broker /sysmon --#
 @load ./processCreate.bro           #-- Sysmon EventID 1 --#
 @load ./procChangeFileTime.bro      #-- Sysmon EventID 2 --#
 @load ./networkConnection.bro       #-- Sysmon EventID 3 --#
@@ -26,4 +27,4 @@
 @load ./wmiEvent20.bro              #-- Sysmon EventID 20 --#
 @load ./windowsEvent
 
-#@load ./fingerprint_mapping
+@load ./fingerprint_mapping

@@ -20,6 +20,8 @@ global tableNetConns: table[conn_id] of ProcDetails &redef;
 
 event sysmon_networkConnection(computerName: string, processId: string, proto: string, srcip: string, srcprt: string, dstip: string, dstprt: string, procImage: string)
 {
+#print "Network Connection";
+
   local orig_h = to_addr(srcip);
   local orig_p =  to_port(string_cat(srcprt,"/",proto));
   local resp_h = to_addr(dstip);
@@ -36,6 +38,7 @@ event sysmon_networkConnection(computerName: string, processId: string, proto: s
   myConn$orig_p = orig_p;
   myConn$resp_h = resp_h;
   myConn$resp_p = resp_p;
+  #print fmt("Adding %s", cat(myConn));
   tableNetConns[myConn] = r;
 }
 

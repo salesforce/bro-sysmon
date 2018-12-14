@@ -17,10 +17,14 @@ export {
 
     type wmiEvent20:record {
 	computerName: string &log &optional;
-	bootStatusPolicy: string &log &optional;
-	lastBootGood: string &log &optional;
-	lastBootId: string &log &optional;
-	lastShutdownGood: string &log &optional;
+	process_id: int &log &optional;
+	destination_len: int &log &optional;
+	destination: string &log &optional;
+	eventType: string &log &optional;
+	operation: string &log &optional;
+	mytype: string &log &optional;
+	user: string &log &optional;
+	utc_time: string &log &optional;
 	};
 
 
@@ -33,15 +37,19 @@ event bro_init() &priority=5
     Log::create_stream(Sysmon::WmiEvent20, [$columns=wmiEvent20, $ev=log_wmiEvent20, $path="sysmon_wmiEvent20"]);
 }
 
-event sysmon_wmiEvent20(computerName: string, bootStatusPolicy: string,  lastBootGood: string, lastBootId: string, lastShutdownGood: string)
+event sysmon_wmiEvent20(computer_name: string, process_id: int, destination: string, eventType: string, operation: string, mytype: string, user: string, utc_time: string)
 {
 local r: wmiEvent20;
-#print "HERE";
-r$computerName = computerName;
-r$bootStatusPolicy = bootStatusPolicy;
-r$lastBootGood = lastBootGood;
-r$lastBootId = lastBootId;
-r$lastShutdownGood = lastShutdownGood;
+#print "HERE WMI 20";
+r$computerName = computer_name;
+r$process_id = process_id;
+r$destination_len = |destination|;
+r$destination = destination;
+r$eventType = eventType;
+r$operation = operation;
+r$mytype = mytype;
+r$user = user;
+r$utc_time = utc_time;
 
 #print "Writing log";
 Log::write(Sysmon::WmiEvent20, r);

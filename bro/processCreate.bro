@@ -67,6 +67,7 @@ r$parentImage = parentImage;
 r$parentProcessGuid = parentProcessGuid;
 r$parentProcessId = parentProcessId;
 r$processId = processId;
+r$commandLine = commandLine;
 r$product = product;
 r$terminalSessionId = terminalSessionId;
 r$user = user;
