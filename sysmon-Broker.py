@@ -48,7 +48,6 @@ def object_sacl_changed(winevt):
 
 def process_creation(winevt):
     evt_data = winevt['event_data']
-
     try:
         message = broker.bro.Event(
 	    'process_created',
@@ -75,6 +74,7 @@ def process_creation(winevt):
 	    evt_data.get('UtcTime','UtcTime not provided').encode('ascii','ignore'),
         )
     except Exception as e:
+        #print e;
         return 
     return message
 
@@ -93,12 +93,12 @@ def process_change_file(winevt):
             evt_data.get('Image','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
 def network_connection(winevt):
     evt_data = winevt['event_data']
-
     try:
         message = broker.bro.Event(
             'sysmon_networkConnection',
@@ -112,6 +112,7 @@ def network_connection(winevt):
             evt_data.get('Image','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -132,6 +133,7 @@ def process_terminated(winevt):
             evt_data.get('UtcTime','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -152,6 +154,7 @@ def driver_loaded(winevt):
             #evt_data.get('','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -196,6 +199,7 @@ def create_remote_thread(winevt):
             evt_data.get('StartFunction','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -214,6 +218,7 @@ def raw_access_read(winevt):
             evt_data.get('Device','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -236,6 +241,7 @@ def process_access(winevt):
             evt_data.get('CallTrace','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -254,6 +260,7 @@ def file_create(winevt):
             evt_data.get('UtcTime','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -275,6 +282,7 @@ def registry_event(winevt):
             evt_data.get('NewName','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -294,6 +302,7 @@ def file_create_stream_hash(winevt):
             evt_data.get('Hash','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -310,6 +319,7 @@ def config_change(winevt):
             evt_data.get('ConfigurationFileHash','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -333,6 +343,7 @@ def pipe_event(winevt):
             evt_data.get('Image','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -344,12 +355,17 @@ def wmi_event_19(winevt):
         message = broker.bro.Event(
             'sysmon_wmiEvent19',
             winevt.get('computer_name').encode('ascii','ignore'),
-            winevt.get('Message','None').encode('ascii','ignore'),
-            evt_data.get('ServiceGuid','None').encode('ascii','ignore'),
-            evt_data.get('UpdateRevisionNumber','None').encode('ascii','ignore'),
-            evt_data.get('UpdateTitle','None').encode('ascii','ignore'),
+            winevt.get('process_id',None),
+            winevt.get('EventNamespace','None').encode('ascii','ignore'),
+            evt_data.get('EventType','None').encode('ascii','ignore'),
+            evt_data.get('Name','None').encode('ascii','ignore'),
+            evt_data.get('Operation','None').encode('ascii','ignore'),
+            evt_data.get('Query','None').encode('ascii','ignore'),
+            evt_data.get('User','None').encode('ascii','ignore'),
+            evt_data.get('UtcTime','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -360,15 +376,18 @@ def wmi_event_20(winevt):
         message = broker.bro.Event(
             'sysmon_wmiEvent20',
             winevt.get('computer_name').encode('ascii','ignore'),
-            evt_data.get('BootStatusPolicy','None').encode('ascii','ignore'),
-            evt_data.get('LastBootGood','None').encode('ascii','ignore'),
-            evt_data.get('LastBootId','None').encode('ascii','ignore'),
-            evt_data.get('LastShutdownGood','None').encode('ascii','ignore'),
+            winevt.get('process_id',None),
+            evt_data.get('Destination','None').encode('ascii','ignore'),
+            evt_data.get('EventType','None').encode('ascii','ignore'),
+            evt_data.get('Operation','None').encode('ascii','ignore'),
+            evt_data.get('Type','None').encode('ascii','ignore'),
+            evt_data.get('User','None').encode('ascii','ignore'),
+            evt_data.get('UTC','None').encode('ascii','ignore'),
         )
     except Exception as e:
+        print e;
         return
     return message
-
 
 def wmi_event_21(winevt):
     evt_data = winevt['event_data']
@@ -383,6 +402,7 @@ def wmi_event_21(winevt):
             evt_data.get('LastShutdownGood','None').encode('ascii','ignore'),
         )
     except Exception as e:
+	#print e
         return
     return message
 
@@ -440,7 +460,6 @@ def main(c, file_in):
 	    time.sleep(1)
 	    f.seek(where)
 	else:
-            print("Found line")
             try:
                 winevt = json.loads(line)
             except JSONDecodeError:
@@ -480,6 +499,6 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     c = broker.Endpoint()
-    c.peer(args.broker_peer, 9999)
+    c.peer(args.broker_peer, 9999 )
 
-main(c,args.file_in)
+main(c, args.file_in)
