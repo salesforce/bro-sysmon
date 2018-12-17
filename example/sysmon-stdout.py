@@ -24,91 +24,91 @@ them via a broker topic.
 '''
 
 def generic_event(winevt):
-    print("################## Event 20 #########################")
+    print("################## Generic Event #########################")
     pprint.pprint(winevt)
     print("#####################################################")  
 
 def logon_success(winevt):
     evt_data = winevt.get('event_data')
-    print("################## Event 20 #########################")
+    print("################## Logon Success #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def object_sacl_changed(winevt):
     evt_data = winevt.get('event_data')
-    print("################## Event 20 #########################")
+    print("################## object_sacl_changed #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def process_creation(winevt):
-    print("################## Event 20 #########################")
+    print("################## Process Created #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def process_change_file(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Process Changed File #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def network_connection(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Network Conneciton #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def service_change(winevt):
     print "service_change"
-    print("################## Event 20 #########################")
+    print("################## Service Changed #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def process_terminated(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Process Terminated #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def driver_loaded(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Driver Loaded #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def image_loaded(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Image Loaded #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def create_remote_thread(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Create Remote Thread #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def raw_access_read(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Raw Access Read #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def process_access(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Process Access #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def file_create(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## File Create #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 
 def registry_event(winevt):
     evt_data = winevt['event_data']
-    print("################## Registry0 #########################")
+    print("################## Registry Event #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
@@ -152,13 +152,13 @@ def wmi_event_20(winevt):
 
 def wmi_event_21(winevt):
     evt_data = winevt['event_data']
-    print("################## Event 20 #########################")
+    print("################## Event 21 #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
 def sysmon_error(winevt):
     print "Error"
-    print("################## Event 20 #########################")
+    print("################## Error Message #########################")
     pprint.pprint(winevt)
     print("#####################################################")
 
