@@ -1,5 +1,5 @@
 # Bro-Sysmon
-[How to Zeek Sysmon logs](https://medium.com/p/946295bc7da2).
+How to Zeek Sysmon logs.
 
 ## Overview
 Bro-Sysmon enables Bro to receive Windows Event Logs.  This provide a method to associate Network Monitoring and Host Monitoring.  The work was spurred by the need to associate [JA3](https://engineering.salesforce.com/open-sourcing-ja3-92c9e53c3c41) and [HASSH](https://engineering.salesforce.com/open-sourcing-hassh-abed3ae5044c) fingerprints with the application on the host.  The example below shows the hostname, Process ID, connection information, JA3 fingerprints, Application Path, and binary hashes.
