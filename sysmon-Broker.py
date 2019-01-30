@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 import broker
 import json
 import pprint
+import time
 
 _DESCRIPTION = '''Convert Windows Event Log data into Bro events and transmit
 them via a broker topic.
